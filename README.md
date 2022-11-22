@@ -76,3 +76,4 @@ The project structure, mostly follow the base code, using the MVC framework:
 ### Expect to meet goals?
 
 It takes longer than we expected to understand the base code, so we plan to finish up two features mentioned in the proposal. Comparing to the original future plan, we decide to keep the 9\*9 random opponent (ultimate tic tac toe) and min max 3*3 idea and delete the network socket functionality. In this way, the workload is more reasonable, and the task could be distributed evenly among two 2-people groups.
+We choose this game because it is very famous and challenging. It contributes to children’s development growth including predictability and problem solving. Meanwhile, it is a good start up project to let us deeply understand the haskell, lambda function.

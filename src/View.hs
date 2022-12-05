@@ -3,7 +3,7 @@ module View (view) where
 import Brick
 import Brick.Widgets.Center (center)
 import Brick.Widgets.Border (borderWithLabel, hBorder, vBorder, border)
-import Brick.Widgets.Border.Style (unicodeBold)
+import Brick.Widgets.Border.Style (unicodeBold,unicode,unicodeRounded, borderStyleFromChar)
 
 import Model
 import Model.Board
@@ -19,11 +19,61 @@ view' :: PlayState -> Widget String
 view' s = 
   withBorderStyle unicodeBold $ hBox 
   [drawStats s, 
-    padLeft (Pad 5) $
-    hLimit 60 $
-    vLimit 60 $
-    border $
-      vTile [ mkRow s row | row <- [1..dim] ]]
+    vBox [
+          padLeft (Pad 5) $
+          hLimit 20 $
+          vLimit 16 $
+          border $
+          withBorderStyle (borderStyleFromChar '-') $
+          vTile [mkRow1 s row | row <- [1..3]],
+          padLeft (Pad 5) $
+          hLimit 20 $
+          vLimit 16 $
+          border $
+          withBorderStyle (borderStyleFromChar '-') $
+          vTile [mkRow1 s row | row <- [4..6]],
+          padLeft (Pad 5) $
+          hLimit 20 $
+          vLimit 16 $
+          border $
+          withBorderStyle (borderStyleFromChar '-') $
+          vTile [mkRow1 s row | row <- [7..9]]
+    ],
+        vBox [
+          hLimit 20 $
+          vLimit 16 $
+          border $
+          withBorderStyle (borderStyleFromChar '-') $
+          vTile [mkRow2 s row | row <- [1..3]],
+          hLimit 20 $
+          vLimit 16 $
+          border $
+          withBorderStyle (borderStyleFromChar '-') $
+          vTile [ mkRow2 s row | row <- [4..6]],
+          hLimit 20 $
+          vLimit 16 $
+          border $
+          withBorderStyle (borderStyleFromChar '-') $
+          vTile [mkRow2 s row | row <- [7..9]]
+    ],
+        vBox [
+          hLimit 20 $
+          vLimit 16 $
+          border $
+          withBorderStyle (borderStyleFromChar '-') $
+          vTile [mkRow3 s row | row <- [1..3]],
+          hLimit 20 $
+          vLimit 16$
+          border $
+          withBorderStyle (borderStyleFromChar '-') $
+          vTile [mkRow3 s row | row <- [4..6]],
+          hLimit 20 $
+          vLimit 16 $
+          border $
+          withBorderStyle (borderStyleFromChar '-') $
+          vTile [mkRow3 s row | row <- [7..9]]
+    ]
+      ]
     
       
 
@@ -63,8 +113,14 @@ drawLeaderBoard = emptyWidget
 --   where 
 --     p    = psPos s
 
-mkRow :: PlayState -> Int -> Widget n
-mkRow s row = hTile [ mkCell s row i | i <- [1..dim] ]
+mkRow1 :: PlayState -> Int -> Widget n
+mkRow1 s row = withBorderStyle (borderStyleFromChar '|') $ hTile [ mkCell s row i | i <- [1..3] ]
+
+mkRow2 :: PlayState -> Int -> Widget n
+mkRow2 s row = withBorderStyle (borderStyleFromChar '|') $ hTile [ mkCell s row i | i <- [4..6] ]
+
+mkRow3 :: PlayState -> Int -> Widget n
+mkRow3 s row = withBorderStyle (borderStyleFromChar '|') $ hTile [ mkCell s row i | i <- [7..9] ]
 
 mkCell :: PlayState -> Int -> Int -> Widget n
 mkCell s r c 
@@ -92,17 +148,13 @@ mkXO (Just X) = blockX
 mkXO (Just O) = blockO
 
 blockB, blockX, blockO :: Widget n
-blockB = vBox (replicate 5 (str "     "))
-blockX = vBox [ str "X       X"
-              , str "  X   X "
-              , str "    X   "
-              , str "  X   X " 
-              , str "X       X"]
-blockO = vBox [ str "  OOOOO  "
-              , str " O     O "
-              , str "O       O"
-              , str " O     O "
-              , str "  OOOOO  "]
+blockB = vBox (replicate 3 (str "     "))
+blockX = vBox [ str " X   X"
+              , str "   X  "
+              , str " X   X" ]
+blockO = vBox [ str " O O "
+              , str "O   O"
+              , str " O O "]
 
 vTile :: [Widget n] -> Widget n
 vTile (b:bs) = vBox (b : [hBorder <=> b | b <- bs])

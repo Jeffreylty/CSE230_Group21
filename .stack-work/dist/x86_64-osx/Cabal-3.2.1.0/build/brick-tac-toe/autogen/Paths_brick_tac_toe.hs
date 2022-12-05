@@ -29,12 +29,12 @@ version :: Version
 version = Version [0,1,0,0] []
 bindir, libdir, dynlibdir, datadir, libexecdir, sysconfdir :: FilePath
 
-bindir     = "/Users/emilyxu/Desktop/CSE230_Group21/.stack-work/install/x86_64-osx/1807ffb25dc3f706a4adeae9f7bebcc256d9ed43402043077eab88d071eedc1e/8.10.7/bin"
-libdir     = "/Users/emilyxu/Desktop/CSE230_Group21/.stack-work/install/x86_64-osx/1807ffb25dc3f706a4adeae9f7bebcc256d9ed43402043077eab88d071eedc1e/8.10.7/lib/x86_64-osx-ghc-8.10.7/brick-tac-toe-0.1.0.0-I7sCUmqeZjv9dUrQYQuLUf-brick-tac-toe"
-dynlibdir  = "/Users/emilyxu/Desktop/CSE230_Group21/.stack-work/install/x86_64-osx/1807ffb25dc3f706a4adeae9f7bebcc256d9ed43402043077eab88d071eedc1e/8.10.7/lib/x86_64-osx-ghc-8.10.7"
-datadir    = "/Users/emilyxu/Desktop/CSE230_Group21/.stack-work/install/x86_64-osx/1807ffb25dc3f706a4adeae9f7bebcc256d9ed43402043077eab88d071eedc1e/8.10.7/share/x86_64-osx-ghc-8.10.7/brick-tac-toe-0.1.0.0"
-libexecdir = "/Users/emilyxu/Desktop/CSE230_Group21/.stack-work/install/x86_64-osx/1807ffb25dc3f706a4adeae9f7bebcc256d9ed43402043077eab88d071eedc1e/8.10.7/libexec/x86_64-osx-ghc-8.10.7/brick-tac-toe-0.1.0.0"
-sysconfdir = "/Users/emilyxu/Desktop/CSE230_Group21/.stack-work/install/x86_64-osx/1807ffb25dc3f706a4adeae9f7bebcc256d9ed43402043077eab88d071eedc1e/8.10.7/etc"
+bindir     = "/Users/liutianyi/CSE230_Group21/.stack-work/install/x86_64-osx/d0d798d42a289be443acfd3f7df40cefea9b5801d51919f4eebfe4bb6d32ebbd/8.10.7/bin"
+libdir     = "/Users/liutianyi/CSE230_Group21/.stack-work/install/x86_64-osx/d0d798d42a289be443acfd3f7df40cefea9b5801d51919f4eebfe4bb6d32ebbd/8.10.7/lib/x86_64-osx-ghc-8.10.7/brick-tac-toe-0.1.0.0-I7sCUmqeZjv9dUrQYQuLUf-brick-tac-toe"
+dynlibdir  = "/Users/liutianyi/CSE230_Group21/.stack-work/install/x86_64-osx/d0d798d42a289be443acfd3f7df40cefea9b5801d51919f4eebfe4bb6d32ebbd/8.10.7/lib/x86_64-osx-ghc-8.10.7"
+datadir    = "/Users/liutianyi/CSE230_Group21/.stack-work/install/x86_64-osx/d0d798d42a289be443acfd3f7df40cefea9b5801d51919f4eebfe4bb6d32ebbd/8.10.7/share/x86_64-osx-ghc-8.10.7/brick-tac-toe-0.1.0.0"
+libexecdir = "/Users/liutianyi/CSE230_Group21/.stack-work/install/x86_64-osx/d0d798d42a289be443acfd3f7df40cefea9b5801d51919f4eebfe4bb6d32ebbd/8.10.7/libexec/x86_64-osx-ghc-8.10.7/brick-tac-toe-0.1.0.0"
+sysconfdir = "/Users/liutianyi/CSE230_Group21/.stack-work/install/x86_64-osx/d0d798d42a289be443acfd3f7df40cefea9b5801d51919f4eebfe4bb6d32ebbd/8.10.7/etc"
 
 getBinDir, getLibDir, getDynLibDir, getDataDir, getLibexecDir, getSysconfDir :: IO FilePath
 getBinDir = catchIO (getEnv "brick_tac_toe_bindir") (\_ -> return bindir)

@@ -15,14 +15,14 @@ data Tick = Tick
 -- | Top-level App State ------------------------------------------------------
 -------------------------------------------------------------------------------
 
-data GameMode = Intro | PlayEasy | PlayMinMax | PlayUltimate | Outro
+data GameMode = Intro | Instruction | PlayEasy | PlayMinMax | PlayUltimate | Outro
   deriving (Eq)
 
 selectiveModes :: Int
-selectiveModes = 3
+selectiveModes = 4
 
 mapping :: Int -> GameMode
-mapping i = fromList [(0, Intro), (1, PlayEasy), (2, PlayMinMax), (3, PlayUltimate), (4, Outro)] ! i
+mapping i = fromList [(0, Intro), (1, Instruction), (2, PlayEasy), (3, PlayMinMax), (4, PlayUltimate), (5, Outro)] ! i
 
 data PlayState = PS
   { psCurMode :: Int

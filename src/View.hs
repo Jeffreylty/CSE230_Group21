@@ -3,7 +3,7 @@ module View (welcome) where
 import Brick
 import Brick.Widgets.Center (center)
 import Brick.Widgets.Border (borderWithLabel, hBorder, vBorder, border)
-import Brick.Widgets.Border.Style (unicodeBold)
+import Brick.Widgets.Border.Style (unicodeBold, borderStyleFromChar)
 
 import Model
 import Model.Board
@@ -12,66 +12,45 @@ import Model.Score
 
 welcome :: PlayState -> [Widget String]
 welcome s
-  | psMode s == Intro      = drawIntro s
-  | scMax (psScore s) == 0 = drawRounds
-  | psMode s == Outro      = drawOutro s
-  | otherwise              = view s
+  | psMode s == Intro        = drawIntro s
+  | psMode s == Instruction  = drawInstruction
+  | scMax (psScore s) == 0   = drawRounds
+  | psMode s == Outro        = drawOutro s
+  | psMode s == PlayEasy     = view s
+  | psMode s == PlayUltimate = viewUltimate s
+  | otherwise                = []
 
 drawIntro :: PlayState -> [Widget String]
-drawIntro s 
-  | psCurMode s == 1 = [
+drawIntro s = introWidget (psCurMode s)
+
+introWidget :: Int -> [Widget String]
+introWidget currMode = [
     center
     $ withBorderStyle unicodeBold
     $ borderWithLabel (str "Tic-Tac-Toe!")
     $ vBox [padLeftRight 10 (str "Welcome to Tic-Tac-Toe game!"),
+            optionString 1 currMode "Game Instructions",
             padTop (Pad 2) $ padLeft (Pad 2) (str "Please Select the Game Mode:"),
-            str " ",
-            modifyDefAttr (`withStyle` reverseVideo) $ padLeftRight 4 (str "1. Simple Tic-Tac-Toe"),
-            str " ",
-            padLeft (Pad 4) (str "2. Tic-Tac-Toe (MinMax)"),
-            str " ",
-            padLeft (Pad 4) (str "3. Ultimate Tic-Tac-Toe")
+            optionString 2 currMode "1. Simple Tic-Tac-Toe",
+            optionString 3 currMode "2. Tic-Tac-Toe MinMax",
+            optionString 4 currMode "3. Ultimate Tic-Tac-Toe"
       ]
     ]
-  | psCurMode s == 2 = [
-    center
-    $ withBorderStyle unicodeBold
-    $ borderWithLabel (str "Tic-Tac-Toe!")
-    $ vBox [padLeftRight 10 (str "Welcome to Tic-Tac-Toe game!"),
-            padTop (Pad 2) $ padLeft (Pad 2) (str "Please Select the Game Mode:"),
-            str " ",
-            padLeftRight 4 (str "1. Simple Tic-Tac-Toe"),
-            str " ",
-            modifyDefAttr (`withStyle` reverseVideo) $ padLeft (Pad 4) (str "2. Tic-Tac-Toe (MinMax)"),
-            str " ",
-            padLeft (Pad 4) (str "3. Ultimate Tic-Tac-Toe")
-      ]
-    ]
-  | psCurMode s == 3 = [
-    center
-    $ withBorderStyle unicodeBold
-    $ borderWithLabel (str "Tic-Tac-Toe!")
-    $ vBox [padLeftRight 10 (str "Welcome to Tic-Tac-Toe game!"),
-            padTop (Pad 2) $ padLeft (Pad 2) (str "Please Select the Game Mode:"),
-            str " ",
-            padLeftRight 4 (str "1. Simple Tic-Tac-Toe"),
-            str " ",
-            padLeft (Pad 4) (str "2. Tic-Tac-Toe (MinMax)"),
-            str " ",
-            modifyDefAttr (`withStyle` reverseVideo) $ padLeft (Pad 4) (str "3. Ultimate Tic-Tac-Toe")
-      ]
-    ]
-  | otherwise = []
+
+optionString :: Int -> Int -> String -> Widget String
+optionString n currMode s
+  | n == currMode = vBox [str " ", modifyDefAttr (`withStyle` reverseVideo) $ padLeftRight 4 (str s)]
+  | otherwise     = vBox [str " ", padLeftRight 4 (str s)]
 
 drawOutro :: PlayState -> [Widget String]
 drawOutro s
-  | psResult s == Draw  = drawEnding "Tied!" (psScore s)
-  | psResult s == Win X = drawEnding "Great, You Win!" (psScore s)
-  | psResult s == Win O = drawEnding "Oops, You Lose..." (psScore s)
+  | psResult s == Draw  = endingWidget "Tied!" (psScore s)
+  | psResult s == Win X = endingWidget "Great, You Win!" (psScore s)
+  | psResult s == Win O = endingWidget "Oops, You Lose..." (psScore s)
   | otherwise = []
 
-drawEnding :: String -> Score -> [Widget String]
-drawEnding s score = [
+endingWidget :: String -> Score -> [Widget String]
+endingWidget s score = [
       center
       $ withBorderStyle unicodeBold
       $ borderWithLabel (str "Tic-Tac-Toe!")
@@ -88,6 +67,15 @@ drawRounds = [
   $ vBox [padLeftRight 10 (str "Please Enter Rounds to Play (1-9)")]
   ]
 
+drawInstruction :: [Widget String]
+drawInstruction = [
+  center
+  $ withBorderStyle unicodeBold
+  $ borderWithLabel (str "Tic-Tac-Toe!")
+  $ vBox [padLeftRight 10 (str "Space Holder for Instructions ... ")]
+  ]
+
+
 -------------------------------------------------------------------------------
 view :: PlayState -> [Widget String]
 -------------------------------------------------------------------------------
@@ -95,6 +83,7 @@ view s = [view' s]
 
 view' :: PlayState -> Widget String
 view' s =
+  joinBorders $
   withBorderStyle unicodeBold $ hBox
   [drawStats s,
     padLeft (Pad 5) $
@@ -103,7 +92,41 @@ view' s =
     border $
       vTile [ mkRow s row | row <- [1..dim] ]]
 
+viewUltimate :: PlayState -> [Widget String]
+viewUltimate s = [hBox [drawStats s,
+      joinBorders $
+      padLeftRight 5 $
+      hLimit 45 $
+      vLimit 90 $
+      border $
+      vBoard [mkBigRow s row | row <- [1..3]]
+    ]
+  ]
 
+mkBigRow :: PlayState -> Int -> Widget n
+mkBigRow s row = hBoard [mkSmallBoard s row i | i <- [1..3]]
+
+mkSmallBoard :: PlayState -> Int -> Int -> Widget n
+mkSmallBoard s bRow bCol = 
+    hLimit 9 $
+    vLimit 18 $
+    vTile [mkSmallRow s row bCol | row <- [bRow*3-2 .. bRow*3]]
+
+mkSmallRow :: PlayState -> Int -> Int -> Widget n
+mkSmallRow s row bCol = 
+  withBorderStyle (borderStyleFromChar '|') $ hTile [mkSmallCell s row i | i <- [bCol*3-2 .. bCol*3]]
+
+mkSmallCell :: PlayState -> Int -> Int -> Widget n
+mkSmallCell s r c
+  | isCurr s r c = withCursor raw
+  | otherwise    = raw
+  where
+    raw = center (mkSmallXO (psBoard s ! Pos r c))
+
+mkSmallXO :: Maybe XO -> Widget n
+mkSmallXO Nothing  = smallBlockB
+mkSmallXO (Just X) = smallBlockO
+mkSmallXO (Just O) = smallBlockX
 
 drawStats :: PlayState -> Widget String
 drawStats s =
@@ -136,13 +159,8 @@ drawString s x = padLeftRight 1 $ str s <+> padLeft Max (str $ show x)
 drawLeaderBoard :: Widget String
 drawLeaderBoard = emptyWidget
 
--- header :: PlayState -> String
--- header s = printf "Tic-Tac-Toe Turn = %s, row = %d, col = %d" (show (psTurn s)) (pRow p) (pCol p)
---   where 
---     p    = psPos s
-
 mkRow :: PlayState -> Int -> Widget n
-mkRow s row = hTile [ mkCell s row i | i <- [1..dim] ]
+mkRow s row = hTile [mkCell s row i | i <- [1..dim]]
 
 mkCell :: PlayState -> Int -> Int -> Widget n
 mkCell s r c
@@ -155,14 +173,9 @@ withCursor :: Widget n -> Widget n
 withCursor = modifyDefAttr (`withStyle` reverseVideo)
 
 mkCell' :: PlayState -> Int -> Int -> Widget n
--- mkCell' _ r c = center (str (printf "(%d, %d)" r c))
 mkCell' s r c = center (mkXO xoMb)
   where
     xoMb      = psBoard s ! Pos r c
-    -- xoMb 
-    --   | r == c    = Just X 
-    --   | r > c     = Just O 
-    --   | otherwise = Nothing
 
 mkXO :: Maybe XO -> Widget n
 mkXO Nothing  = blockB
@@ -182,10 +195,23 @@ blockO = vBox [ str "  OOOOO  "
               , str " O     O "
               , str "  OOOOO  "]
 
+smallBlockB, smallBlockO, smallBlockX :: Widget n
+smallBlockB = str "   "
+smallBlockX = str " X "
+smallBlockO = str " O "
+
 vTile :: [Widget n] -> Widget n
-vTile (b:bs) = vBox (b : [hBorder <=> b | b <- bs])
+vTile (b:bs) = withBorderStyle (borderStyleFromChar '-') $ vBox (b : [hBorder <=> b | b <- bs])
 vTile _      = emptyWidget
 
 hTile :: [Widget n] -> Widget n
-hTile (b:bs) = hBox (b : [vBorder <+> b | b <- bs])
+hTile (b:bs) = withBorderStyle (borderStyleFromChar '|') $ hBox (b : [vBorder <+> b | b <- bs])
 hTile _      = emptyWidget
+
+vBoard :: [Widget n] -> Widget n
+vBoard (b:bs) = withBorderStyle (borderStyleFromChar '-') $ vBox (b : [hBorder <=> b | b <- bs])
+vBoard _      = emptyWidget
+
+hBoard :: [Widget n] -> Widget n
+hBoard (b:bs) = withBorderStyle (borderStyleFromChar '|') $ hBox (b : [vBorder <+> b | b <- bs])
+hBoard _      = emptyWidget

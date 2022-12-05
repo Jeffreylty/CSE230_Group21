@@ -1,7 +1,7 @@
 {-# LANGUAGE DeriveFunctor #-}
-module Model.Board 
+module Model.Board
   ( -- * Types
-    Board
+    GameBoard (..)
   , XO (..)
   , Pos (..)
   , Result (..)
@@ -25,103 +25,110 @@ module Model.Board
   where
 
 import Prelude hiding (init)
-import qualified Data.Map as M 
+import qualified Data.Map as M
 
 -------------------------------------------------------------------------------
 -- | Board --------------------------------------------------------------------
 -------------------------------------------------------------------------------
+data GameBoard = GB
+  { gbBoard :: Board
+  , gbDim :: Int
+  }
 
 type Board = M.Map Pos XO
 
-data XO 
-  = X 
+data XO
+  = X
   | O
   deriving (Eq, Show)
 
-data Pos = Pos 
+data Pos = Pos
   { pRow :: Int  -- 1 <= pRow <= dim 
   , pCol :: Int  -- 1 <= pCol <= dim
   }
   deriving (Eq, Ord)
 
-(!) :: Board -> Pos -> Maybe XO 
+(!) :: Board -> Pos -> Maybe XO
 board ! pos = M.lookup pos board
 
-dim :: Int
-dim = 3
+dim :: GameBoard -> Int
+dim = gbDim
 
-positions :: [Pos]
-positions = [ Pos r c | r <- [1..dim], c <- [1..dim] ] 
+positions :: GameBoard -> [Pos]
+positions gb = [ Pos r c | r <- [1..dim gb], c <- [1..dim gb] ]
 
-emptyPositions :: Board -> [Pos]
-emptyPositions board  = [ p | p <- positions, M.notMember p board]
+emptyPositions :: GameBoard -> [Pos]
+emptyPositions gb  = [ p | p <- positions gb, M.notMember p (gbBoard gb)]
 
-init :: Board
-init = M.empty
+init :: Int -> GameBoard
+init d = GB {
+  gbBoard = M.empty,
+  gbDim = d
+  }
 
 -------------------------------------------------------------------------------
 -- | Playing a Move
 -------------------------------------------------------------------------------
-                 
-data Result a 
-  = Draw 
+
+data Result a
+  = Draw
   | Win XO
-  | Retry 
+  | Retry
   | Cont a
   deriving (Eq, Functor, Show)
 
-put :: Board -> XO -> Pos -> Result Board
-put board xo pos = case M.lookup pos board of 
+put :: GameBoard -> XO -> Pos -> Result GameBoard
+put gb xo pos = case M.lookup pos (gbBoard gb) of
   Just _  -> Retry
-  Nothing -> result (M.insert pos xo board) 
+  Nothing -> result (gb {gbBoard = M.insert pos xo (gbBoard gb) })
 
-result :: Board -> Result Board
-result b 
-  | isFull b  = Draw
-  | wins b X  = Win  X 
-  | wins b O  = Win  O
-  | otherwise = Cont b
+result :: GameBoard -> Result GameBoard
+result gb
+  | isFull gb  = Draw
+  | wins gb X  = Win  X
+  | wins gb O  = Win  O
+  | otherwise = Cont gb
 
-wins :: Board -> XO -> Bool
-wins b xo = or [ winsPoss b xo ps | ps <- winPositions ]
+wins :: GameBoard -> XO -> Bool
+wins gb xo = or [ winsPoss (gbBoard gb) xo ps | ps <- winPositions (gbDim gb)]
 
 winsPoss :: Board -> XO -> [Pos] -> Bool
 winsPoss b xo ps = and [ b!p == Just xo | p <- ps ]
 
-winPositions :: [[Pos]]
-winPositions = rows ++ cols ++ diags 
+winPositions :: Int -> [[Pos]]
+winPositions dim = rows dim ++ cols dim ++ diags dim
 
-rows, cols, diags :: [[Pos]]
-rows  = [[Pos r c | c <- [1..dim]] | r <- [1..dim]]
-cols  = [[Pos r c | r <- [1..dim]] | c <- [1..dim]]
-diags = [[Pos i i | i <- [1..dim]], [Pos i (dim+1-i) | i <- [1..dim]]]
+rows, cols, diags :: Int -> [[Pos]]
+rows dim = [[Pos r c | c <- [1..dim]] | r <- [1..dim]]
+cols dim = [[Pos r c | r <- [1..dim]] | c <- [1..dim]]
+diags dim = [[Pos i i | i <- [1..dim]], [Pos i (dim+1-i) | i <- [1..dim]]]
 
-isFull :: Board -> Bool
-isFull b = M.size b == dim * dim
+isFull :: GameBoard -> Bool
+isFull gb = M.size (gbBoard gb) == dim gb * dim gb
 
 -------------------------------------------------------------------------------
 -- | Moves 
 -------------------------------------------------------------------------------
 
-up :: Pos -> Pos 
-up p = p 
-  { pRow = max 1 (pRow p - 1) 
-  } 
+up :: GameBoard -> Pos -> Pos
+up _ p = p
+  { pRow = max 1 (pRow p - 1)
+  }
 
-down :: Pos -> Pos
-down p = p 
-  { pRow = min dim (pRow p + 1) 
-  } 
+down :: GameBoard -> Pos -> Pos
+down gb p = p
+  { pRow = min (dim gb) (pRow p + 1)
+  }
 
-left :: Pos -> Pos 
-left p = p 
-  { pCol   = max 1 (pCol p - 1) 
-  } 
+left :: GameBoard -> Pos -> Pos
+left _ p = p
+  { pCol   = max 1 (pCol p - 1)
+  }
 
-right :: Pos -> Pos 
-right p = p 
-  { pCol = min dim (pCol p + 1) 
-  } 
+right :: GameBoard -> Pos -> Pos
+right gb p = p
+  { pCol = min (dim gb) (pCol p + 1)
+  }
 
 boardWinner :: Result a -> Maybe XO
 boardWinner (Win xo) = Just xo

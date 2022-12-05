@@ -41,10 +41,10 @@ control s ev
   | otherwise = case ev of
                           AppEvent Tick                   -> nextS s =<< liftIO (play O s)
                           T.VtyEvent (V.EvKey V.KEnter _) -> nextS s =<< liftIO (play X s)
-                          T.VtyEvent (V.EvKey V.KUp   _)  -> Brick.continue (move up    s)
-                          T.VtyEvent (V.EvKey V.KDown _)  -> Brick.continue (move down  s)
-                          T.VtyEvent (V.EvKey V.KLeft _)  -> Brick.continue (move left  s)
-                          T.VtyEvent (V.EvKey V.KRight _) -> Brick.continue (move right s)
+                          T.VtyEvent (V.EvKey V.KUp   _)  -> Brick.continue (move (up (psBoard s))   s)
+                          T.VtyEvent (V.EvKey V.KDown _)  -> Brick.continue (move (down (psBoard s))   s)
+                          T.VtyEvent (V.EvKey V.KLeft _)  -> Brick.continue (move (left (psBoard s))   s)
+                          T.VtyEvent (V.EvKey V.KRight _) -> Brick.continue (move (right (psBoard s))  s)
                           T.VtyEvent (V.EvKey V.KEsc _)   -> Brick.halt s
                           _                               -> Brick.continue s
 
@@ -55,7 +55,7 @@ chooseMinMax :: PlayState -> PlayState
 chooseMinMax s = s { psMode = PlayMinMax}
 
 chooseUltimate :: PlayState -> PlayState
-chooseUltimate s = s { psMode = PlayUltimate}
+chooseUltimate s = s { psMode = PlayUltimate, psBoard = Model.Board.init 9}
 
 selectDown :: PlayState -> PlayState
 selectDown s = s { psCurMode = min selectiveModes (psCurMode s + 1)}
@@ -64,7 +64,10 @@ selectUp :: PlayState -> PlayState
 selectUp s = s { psCurMode = max 1 (psCurMode s - 1)}
 
 selectEnter :: PlayState -> PlayState
-selectEnter s = s { psMode = mapping (psCurMode s)}
+selectEnter s 
+  | x == PlayUltimate = s { psMode = x, psBoard = Model.Board.init 9}
+  | otherwise = s { psMode = x}
+    where x = mapping (psCurMode s)
 
 enterRounds :: Char -> PlayState -> PlayState
 enterRounds d s
@@ -77,7 +80,7 @@ move :: (Pos -> Pos) -> PlayState -> PlayState
 move f s = s { psPos = f (psPos s) }
 
 -------------------------------------------------------------------------------
-play :: XO -> PlayState -> IO (Result Board)
+play :: XO -> PlayState -> IO (Result GameBoard)
 -------------------------------------------------------------------------------
 play xo s
   | psTurn s == xo = put (psBoard s) xo <$> getPos xo s 
@@ -91,7 +94,7 @@ getStrategy X s = plStrat (psX s)
 getStrategy O s = plStrat (psO s)
 
 -------------------------------------------------------------------------------
-nextS :: PlayState -> Result Board -> EventM n (Next PlayState)
+nextS :: PlayState -> Result GameBoard -> EventM n (Next PlayState)
 -------------------------------------------------------------------------------
 nextS s b = case next s b of
   Right s' -> continue s'

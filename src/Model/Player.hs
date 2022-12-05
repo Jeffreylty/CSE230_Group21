@@ -13,7 +13,7 @@ data Player = Player
   } 
 
 type Strategy = Pos     -- ^ current cursor
-             -> Board   -- ^ current board
+             -> GameBoard   -- ^ current board
              -> XO      -- ^ naught or cross
              -> IO Pos  -- ^ next move
 
@@ -23,7 +23,7 @@ human = Player "human" (\p _ _ -> return p)
 rando :: Player 
 rando = Player "machine" randomStrategy
 
-randomStrategy :: a -> Board -> b -> IO Pos
+randomStrategy :: a -> GameBoard -> b -> IO Pos
 randomStrategy _ b _ = selectRandom (emptyPositions b) 
 
 selectRandom :: [a] -> IO a

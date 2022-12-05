@@ -30,7 +30,7 @@ data PlayState = PS
   , psX      :: Player.Player   -- ^ player X info
   , psO      :: Player.Player   -- ^ player O info
   , psScore  :: Score.Score     -- ^ current score
-  , psBoard  :: Board.Board     -- ^ current board
+  , psBoard  :: Board.GameBoard     -- ^ current board
   , psTurn   :: Board.XO        -- ^ whose turn 
   , psPos    :: Board.Pos       -- ^ current cursor
   , psResult :: Board.Result () -- ^ result      
@@ -43,9 +43,9 @@ init = PS
   , psX      = Player.human
   , psO      = Player.rando
   , psScore  = Score.init 0
-  , psBoard  = Board.init
+  , psBoard  = Board.init 3
   , psTurn   = Board.X
-  , psPos    = head Board.positions 
+  , psPos    = Board.Pos {pRow = 1, pCol = 1}
   , psResult = Board.Cont ()
   }
 
@@ -54,7 +54,7 @@ isCurr s r c = Board.pRow p == r && Board.pCol p == c
   where 
     p = psPos s 
 
-next :: PlayState -> Board.Result Board.Board -> Either (Board.Result ()) PlayState
+next :: PlayState -> Board.Result Board.GameBoard -> Either (Board.Result ()) PlayState
 next s Board.Retry     = Right s
 next s (Board.Cont b') = Right (s { psBoard = b'
                                   , psTurn  = Board.flipXO (psTurn s) })
@@ -69,6 +69,6 @@ nextBoard s res = case res' of
     sc'  = Score.add (psScore s) (Board.boardWinner res) 
     res' = Score.winner sc'
     s'   = s { psScore = sc'                   -- update the score
-             , psBoard = mempty                -- clear the board
+             , psBoard = Board.init (Board.dim (psBoard s))  -- clear the board
              , psTurn  = Score.startPlayer sc' -- toggle start player
              } 

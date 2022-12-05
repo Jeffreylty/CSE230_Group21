@@ -90,7 +90,7 @@ view' s =
     hLimit 60 $
     vLimit 60 $
     border $
-      vTile [ mkRow s row | row <- [1..dim] ]]
+      vTile [ mkRow s row | row <- [1..3] ]]
 
 viewUltimate :: PlayState -> [Widget String]
 viewUltimate s = [hBox [drawStats s,
@@ -121,7 +121,7 @@ mkSmallCell s r c
   | isCurr s r c = withCursor raw
   | otherwise    = raw
   where
-    raw = center (mkSmallXO (psBoard s ! Pos r c))
+    raw = center (mkSmallXO (gbBoard (psBoard s) ! Pos r c))
 
 mkSmallXO :: Maybe XO -> Widget n
 mkSmallXO Nothing  = smallBlockB
@@ -160,7 +160,7 @@ drawLeaderBoard :: Widget String
 drawLeaderBoard = emptyWidget
 
 mkRow :: PlayState -> Int -> Widget n
-mkRow s row = hTile [mkCell s row i | i <- [1..dim]]
+mkRow s row = hTile [mkCell s row i | i <- [1..3]]
 
 mkCell :: PlayState -> Int -> Int -> Widget n
 mkCell s r c
@@ -175,7 +175,7 @@ withCursor = modifyDefAttr (`withStyle` reverseVideo)
 mkCell' :: PlayState -> Int -> Int -> Widget n
 mkCell' s r c = center (mkXO xoMb)
   where
-    xoMb      = psBoard s ! Pos r c
+    xoMb      = gbBoard (psBoard s) ! Pos r c
 
 mkXO :: Maybe XO -> Widget n
 mkXO Nothing  = blockB

@@ -15,7 +15,7 @@ import Model.Player
 
 control :: PlayState -> BrickEvent n Tick -> EventM n (Next PlayState)
 control s ev
-  | psMode s == Intro = case ev of 
+  | psMode s == Intro = case ev of
                           T.VtyEvent (V.EvKey V.KUp  _)        -> Brick.continue (selectUp s)
                           T.VtyEvent (V.EvKey V.KDown  _)      -> Brick.continue (selectDown s)
                           T.VtyEvent (V.EvKey V.KEnter  _)     -> Brick.continue (selectEnter s)
@@ -64,7 +64,7 @@ selectUp :: PlayState -> PlayState
 selectUp s = s { psCurMode = max 1 (psCurMode s - 1)}
 
 selectEnter :: PlayState -> PlayState
-selectEnter s 
+selectEnter s
   | x == PlayUltimate = s { psMode = x, psBoard = Model.Board.init 9}
   | otherwise = s { psMode = x}
     where x = mapping (psCurMode s)
@@ -83,15 +83,17 @@ move f s = s { psPos = f (psPos s) }
 play :: XO -> PlayState -> IO (Result GameBoard)
 -------------------------------------------------------------------------------
 play xo s
-  | psTurn s == xo = put2 (psBoard s) xo <$> getPos xo s 
+  | psTurn s == xo && psMode s == PlayUltimate = put2 (psBoard s) xo <$> getPos xo s
+  | psTurn s == xo = put (psBoard s) xo <$> getPos xo s
   | otherwise      = return Retry
 
 getPos :: XO -> PlayState -> IO Pos
 getPos xo s = getStrategy xo s (psPos s) (psBoard s) xo
 
-getStrategy :: XO -> PlayState -> Strategy 
+getStrategy :: XO -> PlayState -> Strategy
 getStrategy X s = plStrat (psX s)
 getStrategy O s = plStrat (psO s)
+getStrategy _ _ = \_ _ _ -> return (Pos 1 1) -- dummy
 
 -------------------------------------------------------------------------------
 nextS :: PlayState -> Result GameBoard -> EventM n (Next PlayState)

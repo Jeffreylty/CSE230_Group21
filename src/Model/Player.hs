@@ -3,8 +3,6 @@ module Model.Player where
 import Model.Board ( Pos(Pos), XO(..), GameBoard(..), (!), emptyPositions )
 import System.Random -- (Random(randomRIO))
 import Data.List
-import Debug.Trace
-
 -------------------------------------------------------------------------------
 -- | Players and Strategies ---------------------------------------------------
 -------------------------------------------------------------------------------
@@ -23,7 +21,13 @@ human :: Player
 human = Player "human" (\p _ _ -> return p)
 
 rando :: Player
-rando = Player "machine" minMaxStrategy
+rando = Player "machine" randomStrategy
+
+ace :: Player
+ace = Player "machine" aceStrategy
+
+minMax :: Player
+minMax = Player "machine" minMaxStrategy
 
 randomStrategy :: a -> GameBoard -> b -> IO Pos
 randomStrategy _ gb _ = selectRandom (emptyPositions gb) 
@@ -38,6 +42,48 @@ aceStrategy :: a -> GameBoard -> b -> IO Pos
 aceStrategy _ gb _ = do
   if  (b ! (Pos 2 2) /= Just X) &&  (b ! (Pos 2 2) /= Just O)
     then return (Pos 2 2)
+  else if b ! (Pos 1 1) == Just O && b ! (Pos 1 3) == Just O && (Pos 1 2) `elem`(emptyPositions gb)
+    then return (Pos 1 2)
+  else if b ! (Pos 1 1) == Just O && b ! (Pos 1 2) == Just O && (Pos 1 3) `elem`(emptyPositions gb)
+    then return (Pos 1 3)
+  else if b ! (Pos 1 1) == Just O && b ! (Pos 3 1) == Just O && (Pos 2 1) `elem`(emptyPositions gb)
+    then return (Pos 2 1)
+  else if b ! (Pos 1 1) == Just O && b ! (Pos 2 1) == Just O && (Pos 3 1) `elem`(emptyPositions gb)
+    then return (Pos 3 1)
+  else if b ! (Pos 2 1) == Just O && b ! (Pos 3 1) == Just O && (Pos 1 1) `elem`(emptyPositions gb)
+    then return (Pos 1 1)
+  else if b ! (Pos 3 1) == Just O && b ! (Pos 3 2) == Just O && (Pos 3 3) `elem`(emptyPositions gb)
+    then return (Pos 3 3)
+  else if b ! (Pos 3 1) == Just O && b ! (Pos 3 3) == Just O && (Pos 3 2) `elem`(emptyPositions gb)
+    then return (Pos 3 2)
+  else if b ! (Pos 3 2) == Just O && b ! (Pos 3 3) == Just O && (Pos 3 1) `elem`(emptyPositions gb)
+    then return (Pos 3 1)
+  else if b ! (Pos 1 3) == Just O && b ! (Pos 2 3) == Just O && (Pos 3 3) `elem`(emptyPositions gb)
+    then return (Pos 3 3)
+  else if b ! (Pos 2 3) == Just O && b ! (Pos 3 3) == Just O && (Pos 1 3) `elem`(emptyPositions gb)
+    then return (Pos 1 3)
+  else if b ! (Pos 1 3) == Just O && b ! (Pos 3 3) == Just O && (Pos 2 3) `elem`(emptyPositions gb)
+    then return (Pos 2 3)
+  else if b ! (Pos 1 1) == Just O && b ! (Pos 2 2) == Just O && (Pos 3 3) `elem`(emptyPositions gb)
+    then return (Pos 3 3)
+  else if b ! (Pos 1 1) == Just O && b ! (Pos 3 3) == Just O && (Pos 2 2) `elem`(emptyPositions gb)
+    then return (Pos 2 2)
+  else if b ! (Pos 2 2) == Just O && b ! (Pos 3 3) == Just O && (Pos 1 1) `elem`(emptyPositions gb)
+    then return (Pos 1 1)
+  else if b ! (Pos 1 3) == Just O && b ! (Pos 2 2) == Just O && (Pos 3 1) `elem`(emptyPositions gb)
+    then return (Pos 3 1)
+  else if b ! (Pos 1 3) == Just O && b ! (Pos 3 1) == Just O && (Pos 2 2) `elem`(emptyPositions gb)
+    then return (Pos 2 2)
+  else if b ! (Pos 2 2) == Just O && b ! (Pos 3 1) == Just O && (Pos 1 3) `elem`(emptyPositions gb)
+    then return (Pos 1 3)
+  else if b ! (Pos 2 2) == Just O && b ! (Pos 1 2) == Just O && (Pos 3 2) `elem`(emptyPositions gb)
+    then return (Pos 3 2)
+  else if b ! (Pos 2 2) == Just O && b ! (Pos 3 2) == Just O && (Pos 1 2) `elem`(emptyPositions gb)
+    then return (Pos 1 2)
+  else if b ! (Pos 2 2) == Just O && b ! (Pos 2 1) == Just O && (Pos 2 3) `elem`(emptyPositions gb)
+    then return (Pos 2 3)
+  else if b ! (Pos 2 2) == Just O && b ! (Pos 2 3) == Just O && (Pos 2 1) `elem`(emptyPositions gb)
+    then return (Pos 2 1)
   else if b ! (Pos 1 1) == Just X && b ! (Pos 1 3) == Just X && (Pos 1 2) `elem`(emptyPositions gb)
     then return (Pos 1 2)
   else if b ! (Pos 1 1) == Just X && b ! (Pos 1 2) == Just X && (Pos 1 3) `elem`(emptyPositions gb)
@@ -72,6 +118,24 @@ aceStrategy _ gb _ = do
     then return (Pos 2 2)
   else if b ! (Pos 2 2) == Just X && b ! (Pos 3 1) == Just X && (Pos 1 3) `elem`(emptyPositions gb)
     then return (Pos 1 3)
+  else if b ! (Pos 2 2) == Just X && b ! (Pos 1 2) == Just X && (Pos 3 2) `elem`(emptyPositions gb)
+    then return (Pos 3 2)
+  else if b ! (Pos 2 2) == Just X && b ! (Pos 3 2) == Just X && (Pos 1 2) `elem`(emptyPositions gb)
+    then return (Pos 1 2)
+  else if b ! (Pos 2 2) == Just X && b ! (Pos 2 1) == Just X && (Pos 2 3) `elem`(emptyPositions gb)
+    then return (Pos 2 3)
+  else if b ! (Pos 2 2) == Just X && b ! (Pos 2 3) == Just X && (Pos 2 1) `elem`(emptyPositions gb)
+    then return (Pos 2 1)
+  else if b ! (Pos 1 2) == Just X && b ! (Pos 2 1) == Just X && (Pos 1 1) `elem`(emptyPositions gb)
+    then return (Pos 1 1)
+  else if b ! (Pos 1 2) == Just X && b ! (Pos 2 3) == Just X && (Pos 1 3) `elem`(emptyPositions gb)
+    then return (Pos 1 3)
+  else if b ! (Pos 2 1) == Just X && b ! (Pos 3 2) == Just X && (Pos 3 1) `elem`(emptyPositions gb)
+    then return (Pos 3 1)
+  else if b ! (Pos 2 3) == Just X && b ! (Pos 3 2) == Just X && (Pos 3 3) `elem`(emptyPositions gb)
+    then return (Pos 3 3)
+  else if b ! (Pos 2 2) == Just X && (Pos 1 1) `elem`(emptyPositions gb)
+    then return (Pos 1 1)
   else 
     selectRandom (emptyPositions gb) 
   where b = gbBoard gb
@@ -112,8 +176,8 @@ getMove b a = Pos posi posj
       posi = div pos 3 + 1 
       posj = mod pos 3 + 1
       pos = getPoss bbcells aacells 8
-      bb@(bbcells, _) = treeBoard b
-      aa@(aacells, _) = treeBoard a
+      (bbcells, _) = treeBoard b
+      (aacells, _) = treeBoard a
 
 
 getPoss :: Eq a => [a] -> [a] -> Int -> Int

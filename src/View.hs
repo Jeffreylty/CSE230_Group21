@@ -3,7 +3,7 @@ module View (welcome) where
 import Brick
 import Brick.Widgets.Center (center)
 import Brick.Widgets.Border (borderWithLabel, hBorder, vBorder, border)
-import Brick.Widgets.Border.Style (unicodeBold, borderStyleFromChar, unicodeRounded, unicode)
+import Brick.Widgets.Border.Style (unicodeBold, unicodeRounded, unicode, BorderStyle(..))
 
 import Model
 import Model.Board
@@ -16,9 +16,8 @@ welcome s
   | psMode s == Instruction  = drawInstruction
   | scMax (psScore s) == 0   = drawRounds
   | psMode s == Outro        = drawOutro s
-  | psMode s == PlayEasy     = view s
   | psMode s == PlayUltimate = viewUltimate s
-  | otherwise                = []
+  | otherwise                = view s
 
 drawIntro :: PlayState -> [Widget String]
 drawIntro s = introWidget (psCurMode s)
@@ -95,16 +94,19 @@ view' s =
 viewUltimate :: PlayState -> [Widget String]
 viewUltimate s = [center $ hBox [drawStats s,
       padLeftRight 5 $
-      hLimit 55 $
-      vLimit 45 $
+      hLimit 30 $
+      vLimit 24 $
       withBorderStyle unicodeRounded $
       borderWithLabel (str "Game Board") $
       vBoard [mkBigRow s row | row <- [1..3]]
     ]
   ]
 
+
 mkBigRow :: PlayState -> Int -> Widget n
-mkBigRow s row = hBoard [mkSmallBoard s row i | i <- [1..3]]
+mkBigRow s row = 
+    vLimit 5 $
+    hBoard [mkSmallBoard s row i | i <- [1..3]]
 
 mkSmallBoard :: PlayState -> Int -> Int -> Widget n
 mkSmallBoard s bRow bCol =
@@ -212,26 +214,41 @@ hTile :: [Widget n] -> Widget n
 hTile (b:bs) = withBorderStyle unicode $ hBox (b : [vBorder <+> b | b <- bs])
 hTile _      = emptyWidget
 
+smallBoardStyle :: BorderStyle
+smallBoardStyle = BorderStyle { bsIntersectFull = toEnum 0x253C
+                    , bsCornerTL      = '+' , bsCornerTR      = '+'
+                    , bsCornerBR      = '+' , bsCornerBL      = '+'
+                    , bsIntersectL    = '+' , bsIntersectR    = '+'
+                    , bsIntersectT    = '+' , bsIntersectB    = '+'
+                    , bsHorizontal    = toEnum 0x2504 , bsVertical      = toEnum 0x2506
+                    }
+
 vSmallTile :: [Widget n] -> Widget n
 vSmallTile (b:bs) = center 
                     $ joinBorders
-                    $ withBorderStyle (borderStyleFromChar '-')
-                    $ hLimit 10 $ vLimit 7
+                    $ withBorderStyle smallBoardStyle
+                    $ hLimit 5 $ vLimit 7
                     $ vBox (b : [hBorder <=> b | b <- bs])
 vSmallTile _      = emptyWidget
 
 hSmallTile :: [Widget n] -> Widget n
 hSmallTile (b:bs) = center 
-                    $ withBorderStyle (borderStyleFromChar '|')
+                    $ withBorderStyle smallBoardStyle
                     $ joinBorders
                     $ hLimit 5 $ vLimit 1 
                     $ hBox (b : [vBorder <+> b | b <- bs])
 hSmallTile _      = emptyWidget
 
 vBoard :: [Widget n] -> Widget n
-vBoard (b:bs) = joinBorders $ hLimit 32 $ vLimit 24 $ center $ withBorderStyle unicode $ vBox (b : [hBorder <=> b | b <- bs])
+vBoard (b:bs) = joinBorders 
+                $ hLimit 30 $ vLimit 24 
+                $ withBorderStyle unicode 
+                $ vBox (b : [hBorder <=> b | b <- bs])
 vBoard _      = emptyWidget
 
 hBoard :: [Widget n] -> Widget n
-hBoard (b:bs) = joinBorders $ hLimit 32 $ vLimit 7 $ center $ withBorderStyle unicode $ hBox (b : [vBorder <+> b | b <- bs])
+hBoard (b:bs) = joinBorders 
+                $ hLimit 30 $ vLimit 7 
+                $ withBorderStyle unicode 
+                $ hBox (b : [vBorder <+> b | b <- bs])
 hBoard _      = emptyWidget

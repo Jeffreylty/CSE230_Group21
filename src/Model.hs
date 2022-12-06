@@ -33,7 +33,8 @@ data PlayState = PS
   , psBoard  :: Board.GameBoard     -- ^ current board
   , psTurn   :: Board.XO        -- ^ whose turn 
   , psPos    :: Board.Pos       -- ^ current cursor
-  , psResult :: Board.Result () -- ^ result      
+  , psResult :: Board.Result () -- ^ result
+  , psNextBoard :: Board.Pos      
   } 
 
 init :: PlayState
@@ -47,6 +48,7 @@ init = PS
   , psTurn   = Board.X
   , psPos    = Board.Pos {pRow = 1, pCol = 1}
   , psResult = Board.Cont ()
+  , psNextBoard = Board.Pos {pRow = 1, pCol = 1}
   }
 
 isCurr :: PlayState -> Int -> Int -> Bool

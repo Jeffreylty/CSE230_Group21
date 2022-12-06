@@ -49,13 +49,13 @@ control s ev
                           _                               -> Brick.continue s
 
 chooseEasy :: PlayState -> PlayState
-chooseEasy s = s { psMode = PlayEasy}
+chooseEasy s = s { psMode = PlayEasy, psO = Model.Player.ace}
 
 chooseMinMax :: PlayState -> PlayState
-chooseMinMax s = s { psMode = PlayMinMax}
+chooseMinMax s = s { psMode = PlayMinMax, psO = Model.Player.minMax}
 
 chooseUltimate :: PlayState -> PlayState
-chooseUltimate s = s { psMode = PlayUltimate, psBoard = Model.Board.init 9}
+chooseUltimate s = s { psMode = PlayUltimate, psBoard = Model.Board.init 9, psO = Model.Player.rando}
 
 selectDown :: PlayState -> PlayState
 selectDown s = s { psCurMode = min selectiveModes (psCurMode s + 1)}
@@ -65,7 +65,9 @@ selectUp s = s { psCurMode = max 1 (psCurMode s - 1)}
 
 selectEnter :: PlayState -> PlayState
 selectEnter s
-  | x == PlayUltimate = s { psMode = x, psBoard = Model.Board.init 9}
+  | x == PlayUltimate = s { psMode = x, psBoard = Model.Board.init 9, psO = Model.Player.rando}
+  | x == PlayEasy     = s { psMode = x, psO = Model.Player.ace}
+  | x == PlayMinMax   = s { psMode = x, psO = Model.Player.minMax}
   | otherwise = s { psMode = x}
     where x = mapping (psCurMode s)
 

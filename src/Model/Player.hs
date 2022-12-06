@@ -60,6 +60,18 @@ aceStrategy _ b _ = do
     then return (Pos 1 3)
   else if b ! (Pos 1 3) == Just X && b ! (Pos 3 3) == Just X && (Pos 2 3) `elem`(emptyPositions b)
     then return (Pos 2 3)
+  else if b ! (Pos 1 1) == Just X && b ! (Pos 2 2) == Just X && (Pos 3 3) `elem`(emptyPositions b)
+    then return (Pos 3 3)
+  else if b ! (Pos 1 1) == Just X && b ! (Pos 3 3) == Just X && (Pos 2 2) `elem`(emptyPositions b)
+    then return (Pos 2 2)
+  else if b ! (Pos 2 2) == Just X && b ! (Pos 3 3) == Just X && (Pos 1 1) `elem`(emptyPositions b)
+    then return (Pos 1 1)
+  else if b ! (Pos 1 3) == Just X && b ! (Pos 2 2) == Just X && (Pos 3 1) `elem`(emptyPositions b)
+    then return (Pos 3 1)
+  else if b ! (Pos 1 3) == Just X && b ! (Pos 3 1) == Just X && (Pos 2 2) `elem`(emptyPositions b)
+    then return (Pos 2 2)
+  else if b ! (Pos 2 2) == Just X && b ! (Pos 3 1) == Just X && (Pos 1 3) `elem`(emptyPositions b)
+    then return (Pos 1 3)
   else 
     selectRandom (emptyPositions b) 
 

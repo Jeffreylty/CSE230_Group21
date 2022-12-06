@@ -1,5 +1,5 @@
 {-# LANGUAGE RecordWildCards #-}
-module Model where 
+module Model where
 
 import Prelude hiding ((!!))
 import qualified Model.Board  as Board
@@ -34,8 +34,8 @@ data PlayState = PS
   , psTurn   :: Board.XO        -- ^ whose turn 
   , psPos    :: Board.Pos       -- ^ current cursor
   , psResult :: Board.Result () -- ^ result
-  , psNextBoard :: Board.Pos      
-  } 
+  , psNextBoard :: [Board.Pos]
+  }
 
 init :: PlayState
 init = PS
@@ -48,29 +48,30 @@ init = PS
   , psTurn   = Board.X
   , psPos    = Board.Pos {pRow = 1, pCol = 1}
   , psResult = Board.Cont ()
-  , psNextBoard = Board.Pos {pRow = 1, pCol = 1}
+  -- , psNextBoard = Board.emptyPositions (Board.init 3)
+  , psNextBoard = []
   }
 
 isCurr :: PlayState -> Int -> Int -> Bool
 isCurr s r c = Board.pRow p == r && Board.pCol p == c
-  where 
-    p = psPos s 
+  where
+    p = psPos s
 
 next :: PlayState -> Board.Result Board.GameBoard -> Either (Board.Result ()) PlayState
 next s Board.Retry     = Right s
 next s (Board.Cont b') = Right (s { psBoard = b'
                                   , psTurn  = Board.flipXO (psTurn s) })
-next s res             = nextBoard s res 
+next s res             = nextBoard s res
 
 nextBoard :: PlayState -> Board.Result a -> Either (Board.Result ()) PlayState
 nextBoard s res = case res' of
-                    Board.Win _ -> Left res' 
+                    Board.Win _ -> Left res'
                     Board.Draw  -> Left res'
-                    _           -> Right s' 
+                    _           -> Right s'
   where
-    sc'  = Score.add (psScore s) (Board.boardWinner res) 
+    sc'  = Score.add (psScore s) (Board.boardWinner res)
     res' = Score.winner sc'
     s'   = s { psScore = sc'                   -- update the score
              , psBoard = Board.init (Board.dim (psBoard s))  -- clear the board
              , psTurn  = Score.startPlayer sc' -- toggle start player
-             } 
+             }

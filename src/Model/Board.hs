@@ -14,6 +14,7 @@ module Model.Board
   , put2
   , positions
   , emptyPositions
+  , checkSmall2
   , boardWinner
   , flipXO
 

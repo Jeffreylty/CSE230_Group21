@@ -24,11 +24,22 @@ main = do
   customMain initialVty buildVty (Just chan) app Model.init
   exitSuccess
 
+attributes :: AttrMap
+attributes = attrMap defAttr [ (attrName "X", bg red)
+                             , (attrName "T", bg white)
+                             , (attrName "O", bg blue)
+                             , (attrName "cursor", bg green)
+                             , (attrName "candidates", bg yellow)
+                             , (attrName "default", bg black)
+                             , (attrName "Red", fg red)
+                             , (attrName "Blue", fg blue)
+                             ]
+
 app :: App PlayState Tick String
 app = App
   { appDraw         = welcome 
   , appChooseCursor = const . const Nothing
   , appHandleEvent  = control 
   , appStartEvent   = return
-  , appAttrMap      = const (attrMap defAttr [])
+  , appAttrMap      = const attributes
   }

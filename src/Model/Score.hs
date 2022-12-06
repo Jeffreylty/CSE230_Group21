@@ -22,10 +22,12 @@ add :: Score -> Maybe XO -> Score
 add sc (Just X) = sc { scX = scX sc + 1 }
 add sc (Just O) = sc { scO = scO sc + 1 }
 add sc Nothing  = sc { scD = scD sc + 1 }
+add sc _        = sc -- dummy
 
 get :: Score -> XO -> Int
 get Score {..} X = scX 
-get Score {..} O = scO 
+get Score {..} O = scO
+get _          _ = 0 -- dummy
 
 currRound :: Score -> Int
 currRound Score {..} = scX + scO + scD + 1

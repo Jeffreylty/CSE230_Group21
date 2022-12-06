@@ -94,7 +94,7 @@ view' s =
 viewUltimate :: PlayState -> [Widget String]
 viewUltimate s = [center $ hBox [drawStats s,
       padLeftRight 5 $
-      hLimit 30 $
+      hLimit 28 $
       vLimit 24 $
       withBorderStyle unicodeRounded $
       borderWithLabel (str "Game Board") $
@@ -109,10 +109,31 @@ mkBigRow s row =
     hBoard [mkSmallBoard s row i | i <- [1..3]]
 
 mkSmallBoard :: PlayState -> Int -> Int -> Widget n
-mkSmallBoard s bRow bCol =
-    hLimit 9 $
+mkSmallBoard s bRow bCol
+  | Pos bRow bCol `elem` psNextBoard s = 
+    hLimit 8 $
     vLimit 7 $
+    withAttr (attrName "candidates") $ 
     vSmallTile [mkSmallRow s row bCol | row <- [bRow*3-2 .. bRow*3]]
+  | Model.Board.checkSmall2 (gb33 (psBoard s)) (Pos bRow bCol) == Just X = 
+    hLimit 8 $
+    vLimit 7 $
+    forceAttr (attrName "X") $
+    vSmallTile [ mkSmallRow s row bCol | row <- [bRow*3-2 .. bRow*3]]
+  | Model.Board.checkSmall2 (gb33 (psBoard s)) (Pos bRow bCol) == Just O = 
+    hLimit 8 $
+    vLimit 7 $
+    forceAttr (attrName "O") $
+    vSmallTile [mkSmallRow s row bCol | row <- [bRow*3-2 .. bRow*3]]
+  | Model.Board.checkSmall2 (gb33 (psBoard s)) (Pos bRow bCol) == Just T = 
+    hLimit 8 $
+    vLimit 7 $
+    forceAttr (attrName "T") $ 
+    vSmallTile [mkSmallRow s row bCol | row <- [bRow*3-2 .. bRow*3]]
+  | otherwise = 
+    hLimit 8 $
+    vLimit 7 $
+    vSmallTile [withAttr (attrName "default") $ mkSmallRow s row bCol | row <- [bRow*3-2 .. bRow*3]]
 
 mkSmallRow :: PlayState -> Int -> Int -> Widget n
 mkSmallRow s row bCol =
@@ -125,12 +146,12 @@ mkSmallCell s r c
   | isCurr s r c = withCursor raw
   | otherwise    = raw
   where
-    raw = hLimit 1 $ vLimit 1 $ center (mkSmallXO (gbBoard (psBoard s) ! Pos r c))
+    raw = hLimit 2 $ vLimit 1 $ center (mkSmallXO (gbBoard (psBoard s) ! Pos r c))
 
 mkSmallXO :: Maybe XO -> Widget n
 mkSmallXO Nothing  = smallBlockB
-mkSmallXO (Just X) = smallBlockO
-mkSmallXO (Just O) = smallBlockX
+mkSmallXO (Just X) = smallBlockX
+mkSmallXO (Just O) = smallBlockO
 mkSmallXO _     = emptyWidget --dummy
 
 drawStats :: PlayState -> Widget String
@@ -175,7 +196,7 @@ mkCell s r c
     raw = mkCell' s r c
 
 withCursor :: Widget n -> Widget n
-withCursor = modifyDefAttr (`withStyle` reverseVideo)
+withCursor = forceAttr (attrName "cursor")
 
 mkCell' :: PlayState -> Int -> Int -> Widget n
 mkCell' s r c = center (mkXO xoMb)
@@ -201,10 +222,10 @@ blockO = vBox [ str "  OOOOO  "
               , str " O     O "
               , str "  OOOOO  "]
 
-smallBlockB, smallBlockO, smallBlockX :: Widget n
-smallBlockB = str " "
-smallBlockX = str "X"
-smallBlockO = str "O"
+smallBlockB, smallBlockX, smallBlockO :: Widget n
+smallBlockB = str "  "
+smallBlockX = withAttr (attrName "Red") $ str "X "
+smallBlockO = withAttr (attrName "Blue") $ str "O "
 
 vTile :: [Widget n] -> Widget n
 vTile (b:bs) = withBorderStyle unicode $ vBox (b : [hBorder <=> b | b <- bs])
@@ -224,10 +245,10 @@ smallBoardStyle = BorderStyle { bsIntersectFull = toEnum 0x253C
                     }
 
 vSmallTile :: [Widget n] -> Widget n
-vSmallTile (b:bs) = center 
+vSmallTile (b:bs) = center
                     $ joinBorders
                     $ withBorderStyle smallBoardStyle
-                    $ hLimit 5 $ vLimit 7
+                    $ hLimit 8 $ vLimit 7
                     $ vBox (b : [hBorder <=> b | b <- bs])
 vSmallTile _      = emptyWidget
 
@@ -235,20 +256,20 @@ hSmallTile :: [Widget n] -> Widget n
 hSmallTile (b:bs) = center 
                     $ withBorderStyle smallBoardStyle
                     $ joinBorders
-                    $ hLimit 5 $ vLimit 1 
+                    $ hLimit 8 $ vLimit 1 
                     $ hBox (b : [vBorder <+> b | b <- bs])
 hSmallTile _      = emptyWidget
 
 vBoard :: [Widget n] -> Widget n
 vBoard (b:bs) = joinBorders 
-                $ hLimit 30 $ vLimit 24 
+                $ hLimit 28 $ vLimit 24 
                 $ withBorderStyle unicode 
                 $ vBox (b : [hBorder <=> b | b <- bs])
 vBoard _      = emptyWidget
 
 hBoard :: [Widget n] -> Widget n
 hBoard (b:bs) = joinBorders 
-                $ hLimit 30 $ vLimit 7 
+                $ hLimit 28 $ vLimit 7 
                 $ withBorderStyle unicode 
                 $ hBox (b : [vBorder <+> b | b <- bs])
 hBoard _      = emptyWidget

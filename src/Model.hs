@@ -48,8 +48,7 @@ init = PS
   , psTurn   = Board.X
   , psPos    = Board.Pos {pRow = 1, pCol = 1}
   , psResult = Board.Cont ()
-  -- , psNextBoard = Board.emptyPositions (Board.init 3)
-  , psNextBoard = []
+  , psNextBoard = Board.emptyPositions (Board.init 3)
   }
 
 isCurr :: PlayState -> Int -> Int -> Bool
@@ -60,7 +59,8 @@ isCurr s r c = Board.pRow p == r && Board.pCol p == c
 next :: PlayState -> Board.Result Board.GameBoard -> Either (Board.Result ()) PlayState
 next s Board.Retry     = Right s
 next s (Board.Cont b') = Right (s { psBoard = b'
-                                  , psTurn  = Board.flipXO (psTurn s) })
+                                  , psTurn  = Board.flipXO (psTurn s)
+                                  , psNextBoard = Board.nextPos b' })
 next s res             = nextBoard s res
 
 nextBoard :: PlayState -> Board.Result a -> Either (Board.Result ()) PlayState

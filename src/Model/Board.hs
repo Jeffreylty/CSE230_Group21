@@ -1,4 +1,5 @@
 {-# LANGUAGE DeriveFunctor #-}
+{-# OPTIONS_GHC -Wno-typed-holes #-}
 module Model.Board
   ( -- * Types
     GameBoard (..)
@@ -14,7 +15,9 @@ module Model.Board
   , put2
   , positions
   , emptyPositions
+  , emptyPositionsRando
   , checkSmall2
+  , to99
   , boardWinner
   , flipXO
 
@@ -36,6 +39,7 @@ data GameBoard = GB
   { gbBoard :: Board
   , gbDim :: Int
   , gb33 :: Board
+  , nextPos :: [Pos]
   }
 
 type Board = M.Map Pos XO
@@ -60,6 +64,13 @@ convertPos (Pos r c) = Pos ((r - 1) `div` 3 +1) ((c - 1) `div` 3 + 1)
 checkSmall2 :: Board -> Pos -> Maybe XO
 checkSmall2 b pos = M.lookup pos b
 
+getNextValid :: GameBoard -> Pos -> [Pos]
+getNextValid gb (Pos r0 c0) = if checkSmall2 (gb33 gb) (Pos r0 c0) == Just O || checkSmall2 (gb33 gb) (Pos r0 c0) == Just T || checkSmall2 (gb33 gb) (Pos r0 c0) == Just X then  -- if the 3*3 board of current move is not empty
+                      emptyPositions33 gb               -- then add all empty positions in the 3*3 board
+                      else
+                      [ Pos (((r0 -1) `mod` 3) +1) (((c0 -1) `mod` 3) +1)]
+
+
 (!) :: Board -> Pos -> Maybe XO
 board ! pos = M.lookup pos board
 
@@ -72,11 +83,21 @@ positions gb = [ Pos r c | r <- [1..dim gb], c <- [1..dim gb] ]
 emptyPositions :: GameBoard -> [Pos]
 emptyPositions gb  = [ p | p <- positions gb, M.notMember p (gbBoard gb)]
 
+emptyPositionsRando :: GameBoard ->[Pos]-> [Pos]
+emptyPositionsRando gb pList = [ p | p <- pList , M.notMember p (gbBoard gb)]
+
+to99 :: Pos -> [Pos]
+to99 (Pos r c) = [ Pos (3*(r-1)+i) (3*(c-1)+j) | i <- [1..3], j <- [1..3] ]
+
+emptyPositions33 :: GameBoard -> [Pos]
+emptyPositions33 gb  = [ p | p <- positions gb, M.notMember p (gb33 gb)]
+
 init :: Int -> GameBoard
 init d = GB {
   gbBoard = M.empty,
   gbDim = d,
-  gb33 = M.empty
+  gb33 = M.empty,
+  nextPos = []
   }
 
 -------------------------------------------------------------------------------
@@ -128,18 +149,24 @@ put2 gb xo pos = case M.lookup pos (gbBoard gb) of
   Nothing -> do
     let p2 = convertPos pos         -- convert the position to the 3*3 board
     case checkSmall2 (gb33 gb) p2 of
-      Just _ -> Retry              -- if the 3*3 board is already occupied, retry
+      Just _ -> Retry              -- if the 3*3 board is already occupied, retry        
       Nothing -> do
-        let b' = M.insert pos xo (gbBoard gb)  -- insert the move into the larger board
-        case sectorResult b' p2 of
-          Nothing -> Cont gb{
-            gbBoard = b'
-            }
-          Just xo -> do
-            result33 gb{
-            gbBoard = b',
-            gb33 = M.insert p2 xo (gb33 gb)
-            } -- insert the move into the 3*3 board and check if the 3*3 board is won
+        if convertPos pos `elem` nextPos gb then do
+          let b' = M.insert pos xo (gbBoard gb)  -- insert the move into the larger board
+          case sectorResult b' p2 of
+            Nothing -> Cont gb{
+              gbBoard = b',
+              nextPos = getNextValid gb pos
+              }
+            Just _ ->
+                result33 gb' {
+                nextPos = getNextValid gb' pos
+                }
+                where gb' = gb {
+                gbBoard = b',
+                gb33 = M.insert p2 xo (gb33 gb)
+                } -- insert the move into the 3*3 board and check if the 3*3 board is won
+        else Retry
 
 -- The final result is the result of the 3*3 board
 result33 :: GameBoard -> Result GameBoard
@@ -190,12 +217,12 @@ sectorRows (Pos r0 c0) = [[Pos r c | c <- [((c0-1)*3+1) .. (c0*3)]] | r <- [((r0
 sectorCols :: Pos -> [[Pos]]
 sectorCols  (Pos r0 c0) = [[Pos r c | r <- [((r0-1)*3+1) .. (r0*3)]] | c <- [((c0-1)*3+1) .. (c0*3)]]
 sectorDiags :: Pos -> [[Pos]]
-sectorDiags (Pos r0 c0) = [[Pos ((r0-1)*3 + i) ((c0 - 1 )*3 + i) | i <- [1..3]], 
+sectorDiags (Pos r0 c0) = [[Pos ((r0-1)*3 + i) ((c0 - 1 )*3 + i) | i <- [1..3]],
                                     [Pos ((r0-1)*3 + i) ((c0 - 1 )*3 + 4 - i) | i <- [1..3]]]
 
 
 sectorIsFull :: Board -> Pos -> Bool
-sectorIsFull b ps = and [ b!p == Just X || b!p == Just O | p <- sectorPositions ps] 
+sectorIsFull b ps = and [ b!p == Just X || b!p == Just O | p <- sectorPositions ps]
 
 sectorPositions :: Pos -> [Pos]
 sectorPositions (Pos r0 c0) = [ Pos r c | r <- [((r0-1)*3+1) .. (r0*3)], c <- [((c0-1)*3+1) .. (c0*3)]]

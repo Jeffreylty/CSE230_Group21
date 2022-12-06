@@ -94,7 +94,7 @@ view' s =
 viewUltimate :: PlayState -> [Widget String]
 viewUltimate s = [center $ hBox [drawStats s,
       padLeftRight 5 $
-      hLimit 28 $
+      hLimit 37 $
       vLimit 24 $
       withBorderStyle unicodeRounded $
       borderWithLabel (str "Game Board") $
@@ -111,27 +111,27 @@ mkBigRow s row =
 mkSmallBoard :: PlayState -> Int -> Int -> Widget n
 mkSmallBoard s bRow bCol
   | Pos bRow bCol `elem` psNextBoard s = 
-    hLimit 8 $
+    hLimit 11 $
     vLimit 7 $
     withAttr (attrName "candidates") $ 
     vSmallTile [mkSmallRow s row bCol | row <- [bRow*3-2 .. bRow*3]]
   | Model.Board.checkSmall2 (gb33 (psBoard s)) (Pos bRow bCol) == Just X = 
-    hLimit 8 $
+    hLimit 11 $
     vLimit 7 $
     forceAttr (attrName "X") $
     vSmallTile [ mkSmallRow s row bCol | row <- [bRow*3-2 .. bRow*3]]
   | Model.Board.checkSmall2 (gb33 (psBoard s)) (Pos bRow bCol) == Just O = 
-    hLimit 8 $
+    hLimit 11 $
     vLimit 7 $
     forceAttr (attrName "O") $
     vSmallTile [mkSmallRow s row bCol | row <- [bRow*3-2 .. bRow*3]]
   | Model.Board.checkSmall2 (gb33 (psBoard s)) (Pos bRow bCol) == Just T = 
-    hLimit 8 $
+    hLimit 11 $
     vLimit 7 $
     forceAttr (attrName "T") $ 
     vSmallTile [mkSmallRow s row bCol | row <- [bRow*3-2 .. bRow*3]]
   | otherwise = 
-    hLimit 8 $
+    hLimit 11 $
     vLimit 7 $
     vSmallTile [withAttr (attrName "default") $ mkSmallRow s row bCol | row <- [bRow*3-2 .. bRow*3]]
 
@@ -146,7 +146,7 @@ mkSmallCell s r c
   | isCurr s r c = withCursor raw
   | otherwise    = raw
   where
-    raw = hLimit 2 $ vLimit 1 $ center (mkSmallXO (gbBoard (psBoard s) ! Pos r c))
+    raw = hLimit 3 $ vLimit 1 $ center (mkSmallXO (gbBoard (psBoard s) ! Pos r c))
 
 mkSmallXO :: Maybe XO -> Widget n
 mkSmallXO Nothing  = smallBlockB
@@ -223,9 +223,9 @@ blockO = vBox [ str "  OOOOO  "
               , str "  OOOOO  "]
 
 smallBlockB, smallBlockX, smallBlockO :: Widget n
-smallBlockB = str "  "
-smallBlockX = withAttr (attrName "Red") $ str "X "
-smallBlockO = withAttr (attrName "Blue") $ str "O "
+smallBlockB = str "   "
+smallBlockX = withAttr (attrName "Red") $ str  " X "
+smallBlockO = withAttr (attrName "Blue") $ str " O "
 
 vTile :: [Widget n] -> Widget n
 vTile (b:bs) = withBorderStyle unicode $ vBox (b : [hBorder <=> b | b <- bs])
@@ -248,7 +248,7 @@ vSmallTile :: [Widget n] -> Widget n
 vSmallTile (b:bs) = center
                     $ joinBorders
                     $ withBorderStyle smallBoardStyle
-                    $ hLimit 8 $ vLimit 7
+                    $ hLimit 11 $ vLimit 7
                     $ vBox (b : [hBorder <=> b | b <- bs])
 vSmallTile _      = emptyWidget
 
@@ -256,20 +256,20 @@ hSmallTile :: [Widget n] -> Widget n
 hSmallTile (b:bs) = center 
                     $ withBorderStyle smallBoardStyle
                     $ joinBorders
-                    $ hLimit 8 $ vLimit 1 
+                    $ hLimit 11 $ vLimit 1 
                     $ hBox (b : [vBorder <+> b | b <- bs])
 hSmallTile _      = emptyWidget
 
 vBoard :: [Widget n] -> Widget n
 vBoard (b:bs) = joinBorders 
-                $ hLimit 28 $ vLimit 24 
+                $ hLimit 37 $ vLimit 24 
                 $ withBorderStyle unicode 
                 $ vBox (b : [hBorder <=> b | b <- bs])
 vBoard _      = emptyWidget
 
 hBoard :: [Widget n] -> Widget n
 hBoard (b:bs) = joinBorders 
-                $ hLimit 28 $ vLimit 7 
+                $ hLimit 37 $ vLimit 7 
                 $ withBorderStyle unicode 
                 $ hBox (b : [vBorder <+> b | b <- bs])
 hBoard _      = emptyWidget

@@ -1,6 +1,6 @@
 module Model.Player where
 
-import Model.Board ( Pos(Pos), XO(..), GameBoard(..), (!), emptyPositions )
+import Model.Board ( Pos(Pos), XO(..), GameBoard(..), (!), emptyPositions, to99, emptyPositionsRando )
 import System.Random -- (Random(randomRIO))
 import Data.List
 -------------------------------------------------------------------------------
@@ -30,7 +30,9 @@ minMax :: Player
 minMax = Player "machine" minMaxStrategy
 
 randomStrategy :: a -> GameBoard -> b -> IO Pos
-randomStrategy _ gb _ = selectRandom (emptyPositions gb) 
+randomStrategy _ gb _ = let pList = [to99 r | r <- nextPos gb] in
+                        let pl' =  concat pList in
+                              selectRandom (emptyPositionsRando gb pl')
 
 selectRandom :: [a] -> IO a
 selectRandom xs = do

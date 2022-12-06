@@ -85,9 +85,10 @@ move f s = s { psPos = f (psPos s) }
 play :: XO -> PlayState -> IO (Result GameBoard)
 -------------------------------------------------------------------------------
 play xo s
-  | psTurn s == xo && psMode s == PlayUltimate = put2 (psBoard s) xo <$> getPos xo s
+  | psTurn s == xo && psMode s == PlayUltimate = put2 gb xo <$> getPos xo s
   | psTurn s == xo = put (psBoard s) xo <$> getPos xo s
   | otherwise      = return Retry
+  where gb = (psBoard s) { nextPos = psNextBoard s }
 
 getPos :: XO -> PlayState -> IO Pos
 getPos xo s = getStrategy xo s (psPos s) (psBoard s) xo

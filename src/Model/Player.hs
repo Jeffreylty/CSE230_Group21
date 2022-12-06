@@ -23,7 +23,7 @@ human :: Player
 human = Player "human" (\p _ _ -> return p)
 
 rando :: Player
-rando = Player "machine" minMaxStrategy
+rando = Player "machine" aceStrategy
 
 randomStrategy :: a -> Board -> b -> IO Pos
 randomStrategy _ b _ = selectRandom (emptyPositions b) 
@@ -32,6 +32,37 @@ selectRandom :: [a] -> IO a
 selectRandom xs = do
   i <- randomRIO (0, length xs - 1)
   return (xs !! i)
+
+
+aceStrategy :: a -> Board -> b -> IO Pos
+aceStrategy _ b _ = do
+  if  (b ! (Pos 2 2) /= Just X) &&  (b ! (Pos 2 2) /= Just O)
+    then return (Pos 2 2)
+  else if b ! (Pos 1 1) == Just X && b ! (Pos 1 3) == Just X && (Pos 1 2) `elem`(emptyPositions b)
+    then return (Pos 1 2)
+  else if b ! (Pos 1 1) == Just X && b ! (Pos 1 2) == Just X && (Pos 1 3) `elem`(emptyPositions b)
+    then return (Pos 1 3)
+  else if b ! (Pos 1 1) == Just X && b ! (Pos 3 1) == Just X && (Pos 2 1) `elem`(emptyPositions b)
+    then return (Pos 2 1)
+  else if b ! (Pos 1 1) == Just X && b ! (Pos 2 1) == Just X && (Pos 3 1) `elem`(emptyPositions b)
+    then return (Pos 3 1)
+  else if b ! (Pos 2 1) == Just X && b ! (Pos 3 1) == Just X && (Pos 1 1) `elem`(emptyPositions b)
+    then return (Pos 1 1)
+  else if b ! (Pos 3 1) == Just X && b ! (Pos 3 2) == Just X && (Pos 3 3) `elem`(emptyPositions b)
+    then return (Pos 3 3)
+  else if b ! (Pos 3 1) == Just X && b ! (Pos 3 3) == Just X && (Pos 3 2) `elem`(emptyPositions b)
+    then return (Pos 3 2)
+  else if b ! (Pos 3 2) == Just X && b ! (Pos 3 3) == Just X && (Pos 3 1) `elem`(emptyPositions b)
+    then return (Pos 3 1)
+  else if b ! (Pos 1 3) == Just X && b ! (Pos 2 3) == Just X && (Pos 3 3) `elem`(emptyPositions b)
+    then return (Pos 3 3)
+  else if b ! (Pos 2 3) == Just X && b ! (Pos 3 3) == Just X && (Pos 1 3) `elem`(emptyPositions b)
+    then return (Pos 1 3)
+  else if b ! (Pos 1 3) == Just X && b ! (Pos 3 3) == Just X && (Pos 2 3) `elem`(emptyPositions b)
+    then return (Pos 2 3)
+  else 
+    selectRandom (emptyPositions b) 
+
 
 minMaxStrategy :: a -> Board -> b -> IO Pos
 minMaxStrategy _ b _ = do
@@ -63,10 +94,9 @@ fillBoard b = concat (
       ))
 
 getMove :: Tree -> Tree -> Pos
-
-getMove b a = trace ("DEBUG: bobreverse" ++ show posi) Pos posi posj
+getMove b a = Pos posi posj
     where 
-      posi = div pos 3 + 1
+      posi = div pos 3 + 1 
       posj = mod pos 3 + 1
       pos = getPoss bbcells aacells 8
       bb@(bbcells, _) = treeBoard b
@@ -74,9 +104,10 @@ getMove b a = trace ("DEBUG: bobreverse" ++ show posi) Pos posi posj
 
 
 getPoss :: Eq a => [a] -> [a] -> Int -> Int
-getPoss bcells acells n
-  | bcells !! n == acells !! n  = getPoss bcells acells n-1
-  | otherwise                    = n
+getPoss bcells acells n = 
+  if bcells !! n == acells !! n
+    then getPoss bcells acells (n-1)
+  else n 
 
 
 data Player' = OO | XX

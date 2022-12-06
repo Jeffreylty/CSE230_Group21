@@ -31,6 +31,7 @@ module Model.Board
 
 import Prelude hiding (init)
 import qualified Data.Map as M
+import Data.Maybe
 
 -------------------------------------------------------------------------------
 -- | Board --------------------------------------------------------------------
@@ -65,10 +66,10 @@ checkSmall2 :: Board -> Pos -> Maybe XO
 checkSmall2 b pos = M.lookup pos b
 
 getNextValid :: GameBoard -> Pos -> [Pos]
-getNextValid gb (Pos r0 c0) = if checkSmall2 (gb33 gb) (Pos r0 c0) == Just O || checkSmall2 (gb33 gb) (Pos r0 c0) == Just T || checkSmall2 (gb33 gb) (Pos r0 c0) == Just X then  -- if the 3*3 board of current move is not empty
-                      emptyPositions33 gb               -- then add all empty positions in the 3*3 board
-                      else
-                      [ Pos (((r0 -1) `mod` 3) +1) (((c0 -1) `mod` 3) +1)]
+getNextValid gb (Pos r0 c0)
+  | isNothing (checkSmall2 (gb33 gb) (Pos (r0 - (((r0 -1) `div` 3) *3 )) (c0 - (((c0 -1) `div` 3) *3 )) )) = [ Pos (((r0 -1) `mod` 3) +1) (((c0 -1) `mod` 3) +1)]
+  | otherwise = emptyPositions33 gb  -- if the 3*3 board of current move is not empty
+                                    -- then add all empty positions in the 3*3 board
 
 
 (!) :: Board -> Pos -> Maybe XO
@@ -80,6 +81,9 @@ dim = gbDim
 positions :: GameBoard -> [Pos]
 positions gb = [ Pos r c | r <- [1..dim gb], c <- [1..dim gb] ]
 
+positions33 :: [Pos]
+positions33 = [ Pos r c | r <- [1..3], c <- [1..3] ]
+
 emptyPositions :: GameBoard -> [Pos]
 emptyPositions gb  = [ p | p <- positions gb, M.notMember p (gbBoard gb)]
 
@@ -90,7 +94,7 @@ to99 :: Pos -> [Pos]
 to99 (Pos r c) = [ Pos (3*(r-1)+i) (3*(c-1)+j) | i <- [1..3], j <- [1..3] ]
 
 emptyPositions33 :: GameBoard -> [Pos]
-emptyPositions33 gb  = [ p | p <- positions gb, M.notMember p (gb33 gb)]
+emptyPositions33 gb  = [ p | p <- positions33, M.notMember p (gb33 gb)]
 
 init :: Int -> GameBoard
 init d = GB {

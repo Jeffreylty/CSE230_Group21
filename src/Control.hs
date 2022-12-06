@@ -32,7 +32,7 @@ move f s = s { psPos = f (psPos s) }
 play :: XO -> PlayState -> IO (Result Board)
 -------------------------------------------------------------------------------
 play xo s
-  | psTurn s == xo = put (psBoard s) xo <$> getPos xo s 
+  | psTurn s == xo = put2 (psBoard s) (psBoard2 s) xo <$> getPos xo s 
   | otherwise      = return Retry
 
 getPos :: XO -> PlayState -> IO Pos

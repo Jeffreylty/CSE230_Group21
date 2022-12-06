@@ -5,6 +5,7 @@ import Prelude hiding ((!!))
 import qualified Model.Board  as Board
 import qualified Model.Score  as Score
 import qualified Model.Player as Player
+import qualified Data.Map as M
 
 -------------------------------------------------------------------------------
 -- | Ticks mark passing of time: a custom event that we constantly stream
@@ -25,6 +26,7 @@ data PlayState = PS
   , psO      :: Player.Player   -- ^ player O info
   , psScore  :: Score.Score     -- ^ current score
   , psBoard  :: Board.Board     -- ^ current board
+  , psBoard2 :: Board.Board2    -- ^ current board
   , psTurn   :: Board.XO        -- ^ whose turn 
   , psPos    :: Board.Pos       -- ^ current cursor
   , psResult :: Board.Result () -- ^ result      
@@ -36,6 +38,7 @@ init n = PS
   , psO      = Player.rando
   , psScore  = Score.init n
   , psBoard  = Board.init
+  , psBoard2 = Board.init2
   , psTurn   = Board.X
   , psPos    = head Board.positions 
   , psResult = Board.Cont ()
@@ -49,6 +52,7 @@ isCurr s r c = Board.pRow p == r && Board.pCol p == c
 next :: PlayState -> Board.Result Board.Board -> Either (Board.Result ()) PlayState
 next s Board.Retry     = Right s
 next s (Board.Cont b') = Right (s { psBoard = b'
+                                  , psBoard2 = M.insert (Board.convertPos (psPos s)) (psTurn s) (psBoard2 s)
                                   , psTurn  = Board.flipXO (psTurn s) })
 next s res             = nextBoard s res 
 
@@ -62,6 +66,7 @@ nextBoard s res = case res' of
     res' = Score.winner sc'
     s'   = s { psScore = sc'                   -- update the score
              , psBoard = mempty                -- clear the board
+             , psBoard2 = mempty                -- clear the board2
              , psTurn  = Score.startPlayer sc' -- toggle start player
              } 
 

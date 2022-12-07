@@ -13,6 +13,7 @@ import System.Exit (exitFailure, exitSuccess)
 import qualified Model.Board as B
 import qualified TestSuite
 import Data.Map as M
+import qualified List
 
 
 
@@ -25,8 +26,5 @@ testBoard1Empty = [B.Pos 2 2, B.Pos 2 3, B.Pos 3 1, B.Pos 3 2, B.Pos 3 3]
 
 
 main :: IO ()
-main = do
-  putStrLn "\nRunning my tests... "
-  if B.emptyPositions testBoard1 == testBoard1Empty
-    then putStrLn "TRUE"
-  else putStrLn "FALSE"
+main =
+  sequenceA [List.main] >>= bool exitFailure exitSuccess . and

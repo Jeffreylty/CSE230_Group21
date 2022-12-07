@@ -42,7 +42,6 @@ test-suite tests
                      QuickCheck,
                      brick,
                      vty
-  other-modules:      
-                     Model.Board,
-
+  other-modules:     Model.Board,
+                     List,
                      TestSuite

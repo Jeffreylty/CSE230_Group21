@@ -28,9 +28,19 @@ executable brick-tac-toe
   ghc-options:       -W -threaded
 
 test-suite tests
-  default-language: Haskell98
+  default-language:  Haskell2010
   type:              exitcode-stdio-1.0
-  hs-source-dirs:    tests
+  hs-source-dirs:    src,
+                     tests
   ghc-options:       -W -threaded
   main-is:           Test.hs
-  build-depends:     base >=4.9, process
+  build-depends:     base >=4.9, 
+                     process,
+                     containers,
+                     vector,
+                     microlens,
+                     QuickCheck,
+                     brick,
+                     vty
+  other-modules:     Model.Board
+                     

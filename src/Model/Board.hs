@@ -19,6 +19,9 @@ module Model.Board
   , checkSmall2
   , to99
   , boardWinner
+  , wins
+  , isFull
+  , result
   , flipXO
 
     -- * Moves

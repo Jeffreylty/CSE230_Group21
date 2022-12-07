@@ -1,10 +1,10 @@
 module View (welcome) where
 
 import Brick
-import Brick.Widgets.Center (center)
+import Brick.Widgets.Center (center, hCenter)
 import Brick.Widgets.Border (borderWithLabel, hBorder, vBorder, border)
 import Brick.Widgets.Border.Style (unicodeBold, unicodeRounded, unicode, BorderStyle(..))
-
+import Data.Text (pack, Text)
 import Model
 import Model.Board
 import Graphics.Vty hiding (dim)
@@ -14,6 +14,7 @@ welcome :: PlayState -> [Widget String]
 welcome s
   | psMode s == Intro        = drawIntro s
   | psMode s == Instruction  = drawInstruction
+  | psOpponent s == None     = chooseWidget s
   | scMax (psScore s) == 0   = drawRounds
   | psMode s == Outro        = drawOutro s
   | psMode s == PlayUltimate = viewUltimate s
@@ -31,10 +32,36 @@ introWidget currMode = [
             optionString 1 currMode "Game Instructions",
             padTop (Pad 2) $ padLeft (Pad 2) (str "Please Select the Game Mode:"),
             optionString 2 currMode "1. Simple Tic-Tac-Toe",
-            optionString 3 currMode "2. Tic-Tac-Toe MinMax",
-            optionString 4 currMode "3. Ultimate Tic-Tac-Toe"
+            optionString 3 currMode "2. Ultimate Tic-Tac-Toe"
       ]
     ]
+
+chooseWidget :: PlayState -> [Widget String]
+chooseWidget s 
+  | psMode s == PlayEasy = [
+    center
+    $ hLimit 35
+    $ withBorderStyle unicodeRounded
+    $ borderWithLabel (str "Tic-Tac-Toe!")
+    $ vBox [
+      padTop (Pad 1) $ hCenter (str "Please Choose Your Opponent:"),
+      optionString 1 (psCurMode s) "1. Smart AI",
+      optionString 2 (psCurMode s) "2. MinMax AI",
+      optionString 3 (psCurMode s) "3. Human"
+    ]
+  ]
+  | psMode s == PlayUltimate = [
+    center
+    $ hLimit 35
+    $ withBorderStyle unicodeRounded
+    $ borderWithLabel (str "Tic-Tac-Toe!")
+    $ vBox [
+      padTop (Pad 1) $ hCenter (str "Please Choose Your Opponent:"),
+      optionString 1 (psCurMode s) "1. Simple AI",
+      optionString 2 (psCurMode s) "2. Human"
+    ]
+  ]
+  | otherwise = []
 
 optionString :: Int -> Int -> String -> Widget String
 optionString n currMode s
@@ -66,12 +93,17 @@ drawRounds = [
   $ vBox [padLeftRight 10 (str "Please Enter Rounds to Play (1-9)")]
   ]
 
+rules :: Text
+rules = pack "Each small 3 × 3 tic-tac-toe board is referred to as a local board, and the larger 3 × 3 board is referred to as the global board.\n\nThe game starts with X playing wherever they want in any of the 81 empty spots. This move \"sends\" their opponent to its relative location. For example, if X played in the top right square of their local board, then O needs to play next in the local board at the top right of the global board. O can then play in any one of the nine available spots in that local board, each move sending X to a different local board.\n\nIf a move is played so that it is to win a local board by the rules of normal tic-tac-toe, then the entire local board is marked as a victory for the player in the global board. Once a local board is won by a player or it is filled completely, no more moves may be played in that board. If a player is sent to such a board, then that player may play in any other board. Game play ends when either a player wins the global board or there are no legal moves remaining, in which case the game is a draw"
+
 drawInstruction :: [Widget String]
 drawInstruction = [
   center
   $ withBorderStyle unicodeBold
   $ borderWithLabel (str "Tic-Tac-Toe!")
-  $ vBox [padLeftRight 10 (str "Space Holder for Instructions ... ")]
+  $ vBox [hCenter $ padLeftRight 10 (str "Rules for Ultimate Tic-Tac-Toe"),
+  hCenter $ padTop (Pad 1) $ padLeftRight 5 $ txtWrap rules 
+  ]
   ]
 
 

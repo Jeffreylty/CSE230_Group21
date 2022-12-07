@@ -122,9 +122,9 @@ put gb xo pos = case M.lookup pos (gbBoard gb) of
 
 result :: GameBoard -> Result GameBoard
 result gb
-  | isFull gb  = Draw
   | wins gb X  = Win  X
   | wins gb O  = Win  O
+  | isFull gb  = Draw
   | otherwise = Cont gb
 
 wins :: GameBoard -> XO -> Bool
@@ -162,6 +162,14 @@ put2 gb xo pos = case M.lookup pos (gbBoard gb) of
               gbBoard = b',
               nextPos = getNextValid gb pos
               }
+            Just T ->
+                result33 gb' {
+                nextPos = getNextValid gb' pos
+                }
+                where gb' = gb {
+                gbBoard = b',
+                gb33 = M.insert p2 T (gb33 gb)
+                }
             Just _ ->
                 result33 gb' {
                 nextPos = getNextValid gb' pos
@@ -175,9 +183,9 @@ put2 gb xo pos = case M.lookup pos (gbBoard gb) of
 -- The final result is the result of the 3*3 board
 result33 :: GameBoard -> Result GameBoard
 result33 gb
-  | isFull2 (gb33 gb)  = Draw
   | wins2 (gb33 gb) X  = Win  X
   | wins2 (gb33 gb) O  = Win  O
+  | isFull2 (gb33 gb)  = Draw
   | otherwise = Cont gb
 
 wins2 :: Board -> XO -> Bool
@@ -202,9 +210,9 @@ isFull2 b = M.size b == 3 * 3
 -------------------------------------------------------------------------------
 sectorResult :: Board -> Pos -> Maybe XO
 sectorResult b p
-  | sectorIsFull b p = Just T
   | sectorWins b p X = Just X
   | sectorWins b p O = Just O
+  | sectorIsFull b p = Just T
   | otherwise = Nothing
 
 sectorWins :: Board -> Pos -> XO -> Bool

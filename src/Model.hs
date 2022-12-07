@@ -15,18 +15,19 @@ data Tick = Tick
 -- | Top-level App State ------------------------------------------------------
 -------------------------------------------------------------------------------
 
-data GameMode = Intro | Instruction | PlayEasy | PlayMinMax | PlayUltimate | Outro
+data GameMode = Intro | Instruction | PlayEasy | PlayUltimate | Outro
   deriving (Eq)
 
-selectiveModes :: Int
-selectiveModes = 4
+data OpponentMode = Human | MinMax | Rando | Ace | None
+  deriving (Eq)
 
 mapping :: Int -> GameMode
-mapping i = fromList [(0, Intro), (1, Instruction), (2, PlayEasy), (3, PlayMinMax), (4, PlayUltimate), (5, Outro)] ! i
+mapping i = fromList [(0, Intro), (1, Instruction), (2, PlayEasy), (3, PlayUltimate), (4, Outro)] ! i
 
 data PlayState = PS
   { psCurMode :: Int
   , psMode   :: GameMode
+  , psOpponent :: OpponentMode
   , psX      :: Player.Player   -- ^ player X info
   , psO      :: Player.Player   -- ^ player O info
   , psScore  :: Score.Score     -- ^ current score
@@ -41,6 +42,7 @@ init :: PlayState
 init = PS
   { psCurMode = 1
   , psMode   = Intro
+  , psOpponent = None
   , psX      = Player.human
   , psO      = Player.rando
   , psScore  = Score.init 0
@@ -74,4 +76,5 @@ nextBoard s res = case res' of
     s'   = s { psScore = sc'                   -- update the score
              , psBoard = Board.init (Board.dim (psBoard s))  -- clear the board
              , psTurn  = Score.startPlayer sc' -- toggle start player
+             , psNextBoard = Board.emptyPositions (Board.init 3)
              }
